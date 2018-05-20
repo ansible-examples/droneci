@@ -1,0 +1,70 @@
+version: '3.3'
+services:
+
+  drone-server:
+    container_name: drone-server
+    image: drone/drone:{{ drone_version }}
+    volumes:
+      - {{ drone_server_lib_dir }}:/var/lib/drone
+    env_file:
+      - /opt/drone-server/env/.env-drone
+    environment:
+      - DRONE_GITHUB=true
+      - DRONE_OPEN=true
+      - DRONE_ORGS=caas
+      - DRONE_GITHUB_PRIVATE_MODE=true
+      - DRONE_ADMIN=anmolnagpal,gentitope
+      - DRONE_HOST=localhost:{{ drone_http_port }}
+    ports:
+      - {{ drone_http_port }}:{{ drone_http_port }}
+      - {{ drone_grpc_port }}:{{ drone_grpc_port }}
+    networks:
+      drone_net:
+        ipv4_address: 10.3.0.43
+    privileged: true
+    ulimits:
+      nproc: 65535
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 165536
+        hard: 165536
+    cap_add:
+      - ALL
+
+  drone-agent:
+    container_name: drone-agent
+    image: drone/agent:{{ drone_version }}
+    command: agent
+    restart: always
+    depends_on:
+      - drone-server
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - {{ drone_repo_workspace_dir }}:/var/www
+    environment:
+      - DRONE_SERVER=drone-server:9000
+      - DRONE_SECRET=5c81da546105b8f7827f49
+    networks:
+      drone_net:
+        ipv4_address: 10.3.0.44
+    privileged: true
+    ulimits:
+      nproc: 65535
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 165536
+        hard: 165536
+    cap_add:
+      - ALL
+
+
+networks:
+  drone_net:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.3.0.0/16

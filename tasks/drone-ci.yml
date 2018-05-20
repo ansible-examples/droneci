@@ -1,0 +1,40 @@
+---
+
+- name: create dir
+  file: path={{ item }} state=directory owner="{{ drone_user }}" group="{{ drone_group }}" mode=755
+  with_items:
+    - "{{ drone_server_env_dir }}"
+    - "{{ drone_server_lib_dir }}"
+  tags:
+    - deploy
+
+- name: copy docker-compose file
+  template:
+     dest="{{ drone_server_workspace_dir }}/docker-compose.yml"
+     owner="{{ drone_user }}"
+     group="{{ drone_group }}"
+     mode=777
+     src=docker-compose.yml
+  tags:
+    - deploy
+
+- name: transfer startup folder
+  template:
+     src={{ item }}
+     dest={{ drone_server_env_dir }}/{{ item | basename }}
+     owner="{{ drone_user }}"
+     group="{{ drone_group }}"
+     mode=777
+     force=yes
+  with_fileglob:
+    - ../templates/env/.env-drone
+  tags:
+    - deploy
+
+- name: ensure drone docker-compose started
+  become: true
+  docker_service:
+    project_src: "{{ drone_server_workspace_dir }}"
+    state: present
+  tags:
+    - deploy

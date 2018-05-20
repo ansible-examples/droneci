@@ -1,0 +1,20 @@
+---
+
+- name: configuration data
+  become: "{{ansible_user_id}}"
+  local_action: |
+    command echo "
+    drone_server_workspace_dir     ==>  {{ drone_server_workspace_dir }}
+    "
+  register: config_out
+  changed_when: false
+
+- name: print config
+  debug: var=config_out.stdout_lines
+  when: config_out is defined
+
+- name: install drone-ci
+  import_tasks: drone-ci.yml
+  tags:
+    - deploy
+

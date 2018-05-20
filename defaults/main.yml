@@ -1,0 +1,11 @@
+---
+drone_server_workspace_dir: "/opt/drone-server"
+drone_server_env_dir: "{{ drone_server_workspace_dir }}/env"
+drone_server_lib_dir: "{{ drone_server_workspace_dir }}/lib"
+drone_server_config_dir: "{{ drone_server_workspace_dir }}/config"
+drone_repo_workspace_dir: "{{ drone_server_workspace_dir }}/repo"
+drone_grpc_port: 1900
+drone_http_port: 8000
+drone_version: 0.8.5
+drone_user: ubuntu
+drone_group: ubuntu
